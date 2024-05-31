@@ -111,16 +111,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "biljard_csr_solid"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "tokio",
- "tower-http",
-]
-
-[[package]]
 name = "bitflags"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -585,6 +575,16 @@ checksum = "ce305eb0b4296696835b71df73eb912e0f1ffd2556a501fcede6e0c50349191c"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "solid_biljard"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "tokio",
+ "tower-http",
 ]
 
 [[package]]

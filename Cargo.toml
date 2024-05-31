@@ -1,5 +1,5 @@
 [package]
-name = "biljard_csr_solid"
+name = "solid_biljard"
 version = "0.1.0"
 edition = "2021"
 
