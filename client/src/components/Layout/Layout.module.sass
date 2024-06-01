@@ -1,0 +1,38 @@
+.main_layout
+  display: flex
+  flex-direction: column
+  
+  min-height: 100vh
+  max-height: 100vh
+  height: 100vh
+
+  & > main
+    flex-grow: 1
+
+.header
+  margin: 0 auto
+  padding: 1em
+  width: 70ch
+
+  & nav
+    display: flex
+    gap: 1em
+
+.nav_link
+  color: #2299ff
+  text-decoration: none
+  &:hover
+    text-decoration: underline
+
+.footer
+  display: flex
+  justify-content: space-evenly
+  align-items: center
+
+  width: 70ch
+  margin: 1em auto
+
+  & nav
+    display: flex 
+    flex-direction: column
+    gap: 0.25em

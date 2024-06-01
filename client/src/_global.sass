@@ -1,0 +1,25 @@
+@mixin _center()
+  display: flex
+  flex-direction: column
+  align-items: center
+  justify-content: center
+
+@mixin _center_hz()
+  display: flex
+  flex-direction: column
+  align-items: center
+
+._logo
+  animation: logo-spin infinite 20s linear
+  height: 40vmin
+  pointer-events: none
+  padding: 1em
+
+._link
+  color: #55aaff
+
+@keyframes logo-spin 
+  from 
+    transform: rotate(0deg)
+  to 
+    transform: rotate(360deg)

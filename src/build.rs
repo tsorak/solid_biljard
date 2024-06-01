@@ -12,9 +12,9 @@ pub async fn build_client() {
                 println!("{}", String::from_utf8_lossy(v.stdout.as_ref()));
             } else {
                 println!(
-                    "Error building client\nSTDOUT\n{:#?}\nSTDERR\n{:#?}",
-                    String::from_utf8(v.stdout).unwrap(),
-                    String::from_utf8(v.stderr).unwrap()
+                    "Error building client\nSTDOUT\n{}\nSTDERR\n{}",
+                    String::from_utf8_lossy(v.stdout.as_ref()),
+                    String::from_utf8_lossy(v.stderr.as_ref())
                 );
             }
         }
