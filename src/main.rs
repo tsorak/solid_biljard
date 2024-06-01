@@ -1,5 +1,6 @@
 use crate::state::State;
 
+mod api;
 mod build;
 mod router;
 mod state;
