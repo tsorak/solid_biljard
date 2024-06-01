@@ -1,0 +1,3 @@
+#!/bin/fish
+
+cargo watch -c -i ./client -x run
