@@ -1,14 +1,14 @@
 import { HashRouter, Route } from "@solidjs/router";
 
-import connectSocket from "./websocket/main.js";
-
 import Layout from "./components/Layout.jsx";
 
 import Home from "./routes/Home.jsx";
 import Motd from "./routes/Motd.jsx";
+import ClientSocket from "./websocket/socket.js";
 
 export default function App() {
-  const socket = connectSocket();
+  const socket = new ClientSocket("/api/ws");
+  socket.doReloadPageOnReconnect(false);
 
   return (
     <>
