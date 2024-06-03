@@ -11,3 +11,5 @@ watchexec-signals = "=3.0.0"
 
 tokio = { version = "1.38.0", features = ["full"] }
 tower-http = { version = "0.5.2", features = ["fs"] }
+
+serde = { version = "1.0.203", features = ["derive"] }

@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "solid-js": "./client/node_modules/solid-js/dist/solid.js",
+    "@solidjs/router": "./client/node_modules/@solidjs/router/dist/index.js"
+  }
+}
