@@ -4,7 +4,7 @@ use tokio::task::JoinHandle;
 use watchexec::Watchexec;
 use watchexec_signals::Signal;
 
-use crate::state::{RefreshChannel, State};
+use crate::state::{ClientChannel, State};
 
 pub struct ClientWatcher(JoinHandle<()>);
 
@@ -37,7 +37,7 @@ impl ClientWatcher {
     }
 }
 
-async fn watch(ch: RefreshChannel, watch_dir: String) -> anyhow::Result<()> {
+async fn watch(ch: ClientChannel, watch_dir: String) -> anyhow::Result<()> {
     let watch_dir2 = watch_dir.clone();
     let wx = Watchexec::new(move |mut action| {
         // if Ctrl-C is received, quit

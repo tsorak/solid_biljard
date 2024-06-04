@@ -5,6 +5,8 @@ use axum::{
     response::Response,
 };
 
+use crate::state::ClientChannelMessage;
+
 pub async fn ws(ws_upgrade: WebSocketUpgrade, state: State<crate::State>) -> Response {
     ws_upgrade.on_upgrade(|ws| async {
         handle_socket_connection(ws, state).await;
@@ -32,7 +34,7 @@ async fn handle_socket_connection(mut socket: WebSocket, mut state: State<crate:
                     return;
                 }
             },
-            Some(_refresh_request) = state.refresh_channel.recv() => {
+            Some(ClientChannelMessage::Refresh) = state.refresh_channel.recv() => {
                 let _ = socket.send("refresh".into()).await;
             }
         }

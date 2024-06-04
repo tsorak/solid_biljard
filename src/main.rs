@@ -1,14 +1,13 @@
-use client_watcher::ClientWatcher;
 use tokio::net::TcpListener;
 
 use crate::state::State;
 
 mod api;
-mod build;
 mod router;
 mod state;
 
-mod client_watcher;
+mod client;
+use client::Client;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -20,7 +19,13 @@ async fn main() -> anyhow::Result<()> {
 
     println!("Listening on http://localhost:3000");
 
-    let client_watcher = ClientWatcher::new("./client", state.clone());
+    let mut client = Client::new("./client", state.clone());
+    let client_watcher = client
+        .take_watcher()
+        .expect("take_watcher should not be called more than once");
+
+    client.ensure_node_modules().await?;
+    client.build_client().await;
 
     tokio::select! {
         _ = async move { axum::serve(tcp_listener, router::router().with_state(state)).await } => {
