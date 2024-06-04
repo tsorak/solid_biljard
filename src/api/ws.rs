@@ -34,8 +34,11 @@ async fn handle_socket_connection(mut socket: WebSocket, mut state: State<crate:
                     return;
                 }
             },
-            Some(ClientChannelMessage::Refresh) = state.refresh_channel.recv() => {
-                let _ = socket.send("refresh".into()).await;
+            Some(m) = state.client_channel.recv() => {
+                //putting "ClientChannelMessage::Refresh" in the above Some match does not work
+                if matches!(m, ClientChannelMessage::Refresh) {
+                    let _ = socket.send("refresh".into()).await;
+                }
             }
         }
     }

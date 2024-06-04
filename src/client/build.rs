@@ -1,15 +1,19 @@
 use anyhow::bail;
-use tokio::process;
+use tokio::{process, task::JoinHandle};
+
+use crate::state::{ClientChannel, ClientChannelMessage, State};
 
 use super::Client;
 
 pub struct Builder {
     package_manager: String,
+    client_channel: Option<ClientChannel>,
+    build_loop_handle: Option<JoinHandle<()>>,
 }
 
 impl Client {
     pub async fn build_client(&self) -> &Self {
-        self.builder.build_client();
+        self.builder.build_client().await;
         self
     }
 
@@ -19,9 +23,11 @@ impl Client {
 }
 
 impl Builder {
-    pub fn new() -> Self {
+    pub fn new(state: State) -> Self {
         Self {
             package_manager: "".into(),
+            client_channel: Some(state.client_channel.clone()),
+            build_loop_handle: None,
         }
     }
 
@@ -31,47 +37,19 @@ impl Builder {
             .expect("No JS package manager found");
 
         self.package_manager = pm;
+
+        self.build_loop_handle = Some(self.start_build_event_loop().await);
+
         self
     }
 
     pub async fn build_client(&self) -> &Self {
-        match process::Command::new(&self.package_manager)
-            .args(["run", "build"])
-            .current_dir("./client")
-            .output()
-            .await
-        {
-            Ok(v) => {
-                if v.status.success() {
-                    println!("{}", String::from_utf8_lossy(v.stdout.as_ref()));
-                } else {
-                    println!(
-                        "Error building client\nSTDOUT\n{}\nSTDERR\n{}",
-                        String::from_utf8_lossy(v.stdout.as_ref()),
-                        String::from_utf8_lossy(v.stderr.as_ref())
-                    );
-                }
-            }
-            Err(err) => {
-                println!("Error running build command\n{:#?}", err);
-            }
-        };
+        build_client(&self.package_manager).await;
         self
     }
 
     pub async fn ensure_node_modules(&self) -> anyhow::Result<()> {
-        let pm: String = match process::Command::new("which").arg("bun").output().await {
-            Ok(output) => {
-                if output.status.success() {
-                    "bun".into()
-                } else {
-                    "npm".into()
-                }
-            }
-            Err(_) => "npm".into(),
-        };
-
-        let output = match process::Command::new(pm)
+        let output = match process::Command::new(&self.package_manager)
             .arg("install")
             .current_dir("./client")
             .output()
@@ -85,17 +63,62 @@ impl Builder {
             bail!("Failed to install client dependencies");
         }
 
+        println!("node_modules up to date");
         Ok(())
+    }
+
+    async fn start_build_event_loop(&mut self) -> JoinHandle<()> {
+        // at the moment only this method uses the client_channel. Expect it to only be used once.
+        let mut ch = self
+            .client_channel
+            .take()
+            .expect("Only take client_channel once");
+        let pm = self.package_manager.clone();
+
+        tokio::spawn(async move {
+            loop {
+                if let Some(ClientChannelMessage::Build) = ch.recv().await {
+                    build_client(&pm).await;
+                    ch.send_refresh();
+                }
+            }
+        })
     }
 }
 
+async fn build_client(pm: &str) {
+    println!("Building client...");
+
+    match process::Command::new(pm)
+        .args(["run", "build"])
+        .current_dir("./client")
+        .output()
+        .await
+    {
+        Ok(v) => {
+            if v.status.success() {
+                println!("{}", String::from_utf8_lossy(v.stdout.as_ref()));
+            } else {
+                println!(
+                    "Error building client\nSTDOUT\n{}\nSTDERR\n{}",
+                    String::from_utf8_lossy(v.stdout.as_ref()),
+                    String::from_utf8_lossy(v.stderr.as_ref())
+                );
+            }
+        }
+        Err(err) => {
+            println!("Error running build command\n{:#?}", err);
+        }
+    };
+}
+
 async fn get_package_manager() -> anyhow::Result<String> {
-    if let Some(bun_path) = get_executable_path("bun").await {
-        return Ok(bun_path);
+    if let Some(_bun_path) = get_executable_path("bun").await {
+        return Ok("bun".into());
     }
 
-    if let Some(npm_path) = get_executable_path("npm").await {
-        return Ok(npm_path);
+    if let Some(_npm_path) = get_executable_path("npm").await {
+        return Ok("npm".into());
     }
 
     bail!("No JS package manager found")

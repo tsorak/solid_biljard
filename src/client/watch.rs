@@ -20,7 +20,7 @@ impl ClientWatcher {
             .to_string();
 
         let handle = tokio::spawn(async move {
-            watch(state.refresh_channel.clone(), watch_dir)
+            watch(state.client_channel.clone(), watch_dir)
                 .await
                 .expect("Watcher crashed");
         });
@@ -73,7 +73,7 @@ async fn watch(ch: ClientChannel, watch_dir: String) -> anyhow::Result<()> {
 
         if !allowed_paths.is_empty() {
             println!("Filechange detected, rebuilding...");
-            ch.send_refresh_request().unwrap();
+            ch.send_rebuild();
         }
 
         action

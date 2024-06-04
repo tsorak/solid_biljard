@@ -9,7 +9,7 @@ import * as appState from "./appState.js";
 
 export default function App() {
   const socket = new ClientSocket("/api/ws");
-  socket.doReloadPageOnReconnect(false);
+  socket.doReloadPageOnReconnect(true);
 
   const AppState = appState.create({ socket });
   const state = appState.use();

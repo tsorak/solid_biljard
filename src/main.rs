@@ -20,6 +20,7 @@ async fn main() -> anyhow::Result<()> {
     println!("Listening on http://localhost:3000");
 
     let mut client = Client::new("./client", state.clone());
+    client.init().await;
     let client_watcher = client
         .take_watcher()
         .expect("take_watcher should not be called more than once");

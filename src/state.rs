@@ -3,14 +3,14 @@ use tokio::sync::broadcast::{channel, Receiver, Sender};
 #[derive(Debug, Clone)]
 pub struct State {
     pub motd: String,
-    pub refresh_channel: ClientChannel,
+    pub client_channel: ClientChannel,
 }
 
 impl State {
     pub fn new(motd: &str) -> Self {
         Self {
             motd: motd.to_string(),
-            refresh_channel: ClientChannel::new(),
+            client_channel: ClientChannel::new(),
         }
     }
 }
@@ -34,10 +34,14 @@ impl ClientChannel {
         self.1.recv().await.ok()
     }
 
-    pub fn send_refresh_request(&self) -> anyhow::Result<()> {
-        self.0.send(ClientChannelMessage::Refresh)?;
+    pub fn send_rebuild(&self) -> &Self {
+        let _ = self.0.send(ClientChannelMessage::Build);
+        self
+    }
 
-        Ok(())
+    pub fn send_refresh(&self) -> &Self {
+        let _ = self.0.send(ClientChannelMessage::Refresh);
+        self
     }
 }
 
