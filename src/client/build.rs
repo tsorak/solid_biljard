@@ -90,7 +90,7 @@ async fn build_client(pm: &str) {
     println!("Building client...");
 
     match process::Command::new(pm)
-        .args(["run", "build"])
+        .args(["run", "build-dev"])
         .current_dir("./client")
         .output()
         .await

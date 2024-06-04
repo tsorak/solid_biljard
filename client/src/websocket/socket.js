@@ -46,6 +46,12 @@ class ClientSocket {
     this.socket.send(data);
   }
 
+  devtools() {
+    if (import.meta.env.DEV == true && import.meta.env.MODE == "development") {
+      globalThis.rebuild = () => this.rebuild();
+    }
+  }
+
   rebuild() {
     this.socket.send("rebuild");
   }
