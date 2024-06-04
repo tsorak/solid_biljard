@@ -45,6 +45,10 @@ class ClientSocket {
   send(data) {
     this.socket.send(data);
   }
+
+  rebuild() {
+    this.socket.send("rebuild");
+  }
 }
 
 function socketPathFromEndpoint(p) {

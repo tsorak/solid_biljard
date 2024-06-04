@@ -1,7 +1,10 @@
 // use std::time::Duration;
 
 use axum::{
-    extract::{ws::WebSocket, State, WebSocketUpgrade},
+    extract::{
+        ws::{Message, WebSocket},
+        State, WebSocketUpgrade,
+    },
     response::Response,
 };
 
@@ -22,17 +25,21 @@ async fn handle_socket_connection(mut socket: WebSocket, mut state: State<crate:
             //     break;
             // }
             Some(msg) = socket.recv() => {
-                let msg = if let Ok(msg) = msg {
-                    dbg!(msg)
+                if let Ok(msg) = msg {
+                    if let Message::Text(data) = msg {
+                        dbg!(&data);
+                        handle_text_message(&mut socket, &mut state, data).await;
+                    }
                 } else {
                     // Client disconnected
                     return;
                 };
 
-                if socket.send(msg).await.is_err() {
-                    // Client disconnected
-                    return;
-                }
+                // send the same message back
+                // if socket.send(msg).await.is_err() {
+                //     // Client disconnected
+                //     return;
+                // }
             },
             Some(m) = state.client_channel.recv() => {
                 //putting "ClientChannelMessage::Refresh" in the above Some match does not work
@@ -41,5 +48,15 @@ async fn handle_socket_connection(mut socket: WebSocket, mut state: State<crate:
                 }
             }
         }
+    }
+}
+
+async fn handle_text_message(
+    _socket: &mut WebSocket,
+    state: &mut State<crate::State>,
+    data: String,
+) {
+    if let "rebuild" = data.as_str() {
+        state.client_channel.send_rebuild();
     }
 }
