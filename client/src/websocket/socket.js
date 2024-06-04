@@ -41,6 +41,10 @@ class ClientSocket {
   doReloadPageOnReconnect(b) {
     this.reloadPageOnReconnect = b;
   }
+
+  send(data) {
+    this.socket.send(data);
+  }
 }
 
 function socketPathFromEndpoint(p) {
