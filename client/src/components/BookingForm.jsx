@@ -46,23 +46,22 @@ function DayGrid() {
    */
   const dateSelector = useContext(Context);
 
-  const days = () => {
-    const daysInMonth = dateSelector.daysInMonth();
-
-    const list = [];
-    for (let index = 0; index < daysInMonth; index++) {
-      list[index] = index + 1;
-    }
-    return list;
-  };
+  const booked_style = (bookedBy) => (bookedBy ? styles.booked_day : "");
+  const selected_style = (
+    day,
+  ) => (day == dateSelector.day() ? styles.selected_day : "");
 
   return (
     <div class={styles.days_wrapper}>
       <div class={styles.day_grid}>
-        <For each={days()}>
-          {(v, _i) => (
-            <button onClick={() => dateSelector.setDay(v)}>
-              {v}
+        <For each={dateSelector.days()}>
+          {({ day, bookedBy }, _i) => (
+            <button
+              onClick={() => dateSelector.setDay(day)}
+              disabled={bookedBy != null}
+              class={`${booked_style(bookedBy)} ${selected_style(day)}`}
+            >
+              {day}
             </button>
           )}
         </For>

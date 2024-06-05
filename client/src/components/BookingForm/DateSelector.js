@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createResource, createSignal } from "solid-js";
 
 const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
@@ -18,14 +18,57 @@ const months = [
 ];
 
 /**
+ * @typedef {(function(function(number): number): void) | function(number): void} NumberSetter
+ * @typedef {(function(function(string): string): void) | function(string): void} StringSetter
+ */
+
+/**
+ * @typedef {Object} DayData
+ * @property {number} day
+ * @property {string | null} bookedBy
+ */
+
+/**
+ * @param {Object} param0
+ * @param {string} param0.year
+ * @param {string} param0.month
+ * @returns {Promise<DayData[]>}
+ */
+async function fetchBookedDays({ year, month }) {
+  const res = await fetch(`/api/book/${year}/${month}`, {
+    method: "GET",
+    headers: {
+      "accept": "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw Error("Failed to fetch booked days");
+  }
+
+  const data = await res.json();
+
+  return data;
+}
+
+/**
  * @class DateSelector
  */
 export default class DateSelector {
   /**
+   * @type {() => DayData[]}
+   */
+  bookedState;
+  /**
+   * @type {() => DayData[]}
+   */
+  days;
+
+  /**
    * @type {() => number}
    */
   year;
-
   /**
    * @type {(function(function(number): number): void) | function(number): void}
    */
@@ -87,6 +130,21 @@ export default class DateSelector {
       null,
     );
 
+    const [bookedState] = createResource(
+      () => ({ year: year(), month: month() + 1 }),
+      fetchBookedDays,
+    );
+    this.bookedState = bookedState;
+    this.days = () => {
+      const days = this.getDaysInMonth();
+
+      if (bookedState.loading || bookedState.error) {
+        return days;
+      } else {
+        return mergeBookedWithCurrentDays(bookedState, days);
+      }
+    };
+
     this.year = year;
     this.setYear = setYear;
 
@@ -109,7 +167,7 @@ export default class DateSelector {
 
   updateSelectedDate() {
     const day = this.day();
-    const month = this.month();
+    const month = this.month() + 1;
     const year = this.year();
 
     this.setSelectedDate(`${day}-${month}-${year}`);
@@ -157,8 +215,10 @@ export default class DateSelector {
           break;
       }
 
-      const newMonthsDayCount = this.getMonthsDayCount(newMonth);
+      const newMonthsDayCount = getMonthsDayCount(newMonth);
       this.setDaysInMonth(newMonthsDayCount);
+
+      this.validateDayOfMonth(newMonthsDayCount);
 
       return newMonth;
     });
@@ -179,12 +239,22 @@ export default class DateSelector {
           break;
       }
 
-      const newMonthsDayCount = this.getMonthsDayCount(newMonth);
+      const newMonthsDayCount = getMonthsDayCount(newMonth);
       this.setDaysInMonth(newMonthsDayCount);
+
+      this.validateDayOfMonth(newMonthsDayCount);
 
       return newMonth;
     });
     this.updateSelectedDate();
+  }
+
+  validateDayOfMonth(newMonthsDayCount) {
+    const day = this.day();
+
+    if (day <= newMonthsDayCount) return;
+
+    this.setDay(newMonthsDayCount);
   }
 
   setDay(day) {
@@ -192,7 +262,35 @@ export default class DateSelector {
     this.updateSelectedDate();
   }
 
-  getMonthsDayCount(month) {
-    return daysPerMonth[month];
+  /**
+   * @returns {DayData[]}
+   */
+  getDaysInMonth() {
+    const daysInMonth = this.daysInMonth();
+
+    const list = [];
+    for (let index = 0; index < daysInMonth; index++) {
+      list[index] = { day: index + 1, bookedBy: null };
+      if (index == 6) {
+        list[index] = { day: index + 1, bookedBy: "someuserid" };
+      }
+    }
+
+    return list;
   }
+}
+
+function getMonthsDayCount(month) {
+  return daysPerMonth[month];
+}
+
+function mergeBookedWithCurrentDays(bookedState, currentDays) {
+  /** @type {DayData[]} */
+  const bookedData = bookedState();
+
+  bookedData.forEach(({ day, bookedBy }) => {
+    currentDays[day - 1].bookedBy = bookedBy;
+  });
+
+  return currentDays;
 }
