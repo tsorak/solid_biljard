@@ -45,7 +45,16 @@ export default class DateSelector {
   /**
    * @type {(function(function(number): number): void) | function(number): void}
    */
-  setDay;
+  _setDay;
+
+  /**
+   * @type {() => string}
+   */
+  selectedDate;
+  /**
+   * @type {(function(function(string): string): void) | function(string): void}
+   */
+  setSelectedDate;
 
   /**
    * @type {Date}
@@ -74,6 +83,9 @@ export default class DateSelector {
     const [month, setMonth] = createSignal(0);
     const [daysInMonth, setDaysInMonth] = createSignal(31);
     const [day, setDay] = createSignal(1);
+    const [selectedDate, setSelectedDate] = createSignal(
+      null,
+    );
 
     this.year = year;
     this.setYear = setYear;
@@ -85,7 +97,22 @@ export default class DateSelector {
     this.setDaysInMonth = setDaysInMonth;
 
     this.day = day;
-    this.setDay = setDay;
+    this._setDay = setDay;
+
+    this.selectedDate = selectedDate;
+    this.setSelectedDate = setSelectedDate;
+
+    //
+
+    this.updateSelectedDate();
+  }
+
+  updateSelectedDate() {
+    const day = this.day();
+    const month = this.month();
+    const year = this.year();
+
+    this.setSelectedDate(`${day}-${month}-${year}`);
   }
 
   nextYear() {
@@ -97,6 +124,7 @@ export default class DateSelector {
           return p + 1;
       }
     });
+    this.updateSelectedDate();
   }
 
   prevYear() {
@@ -108,6 +136,7 @@ export default class DateSelector {
       // }
       return p - 1;
     });
+    this.updateSelectedDate();
   }
 
   getMonthName() {
@@ -133,6 +162,7 @@ export default class DateSelector {
 
       return newMonth;
     });
+    this.updateSelectedDate();
   }
 
   prevMonth() {
@@ -154,10 +184,12 @@ export default class DateSelector {
 
       return newMonth;
     });
+    this.updateSelectedDate();
   }
 
   setDay(day) {
-    this.setDay(day);
+    this._setDay(day);
+    this.updateSelectedDate();
   }
 
   getMonthsDayCount(month) {

@@ -19,6 +19,7 @@ export default function BookingForm() {
         <YearSelector />
         <MonthSelector />
         <DayGrid />
+        <p>Valt datum: {dateSelector.selectedDate()}</p>
       </div>
     </Context.Provider>
   );
@@ -60,11 +61,7 @@ function DayGrid() {
       <div class={styles.day_grid}>
         <For each={days()}>
           {(v, _i) => (
-            <button
-              onClick={() => {
-                dateSelector.setDay(v);
-              }}
-            >
+            <button onClick={() => dateSelector.setDay(v)}>
               {v}
             </button>
           )}
