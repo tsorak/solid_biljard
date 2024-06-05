@@ -2,6 +2,13 @@ import { A } from "@solidjs/router";
 import logo from "../logo.svg";
 
 import styles from "./Layout/Layout.module.sass";
+import { For } from "solid-js";
+
+const navLinks = [
+  ["Home", "/"],
+  ["Message Of The Day", "/motd"],
+  ["Book", "/book"],
+];
 
 export default function Layout(props) {
   return (
@@ -41,13 +48,14 @@ function Footer() {
 
 function NavItems() {
   return (
-    <>
-      <A href="/" class={styles.nav_link}>
-        Home
-      </A>
-      <A href="/motd" class={styles.nav_link}>
-        Message Of The Day
-      </A>
-    </>
+    <For each={navLinks}>
+      {([title, href]) => {
+        return (
+          <A href={href} class={styles.nav_link}>
+            {title}
+          </A>
+        );
+      }}
+    </For>
   );
 }

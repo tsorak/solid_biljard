@@ -1,0 +1,42 @@
+@import "../../_global.sass"
+
+@mixin selector()
+  display: flex 
+  justify-content: space-between
+  align-items: stretch
+
+  & button
+    @include _button_colors
+    width: 20%
+
+.booking_form
+  display: flex 
+  flex-direction: column
+  justify-content: space-between
+
+  height: 60%
+
+.days_wrapper
+  display: flex 
+  flex-direction: column
+  justify-content: center
+
+  flex-grow: 1
+
+.day_grid
+  display: grid
+  grid-template-columns: repeat(7, 1fr)
+  gap: 4px
+
+  & button
+    @include _button_colors
+    width: 3em
+    height: 3em
+
+    font-size: 1em
+
+.month_selector
+  @include selector
+
+.year_selector
+  @include selector

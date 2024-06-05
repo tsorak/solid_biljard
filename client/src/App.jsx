@@ -4,6 +4,8 @@ import Layout from "./components/Layout.jsx";
 
 import Home from "./routes/Home.jsx";
 import Motd from "./routes/Motd.jsx";
+import Book from "./routes/Book.jsx";
+
 import ClientSocket from "./websocket/socket.js";
 import * as appState from "./appState.js";
 
@@ -20,6 +22,7 @@ export default function App() {
       <HashRouter root={Layout}>
         <Route path="/" component={Home} />
         <Route path="/motd" component={Motd} />
+        <Route path="/book" component={Book} />
       </HashRouter>
     </AppState.Provider>
   );
