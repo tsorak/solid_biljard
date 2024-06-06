@@ -1,4 +1,4 @@
-import { createResource, createSignal } from "solid-js";
+import { createDeferred, createResource, createSignal } from "solid-js";
 
 const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
@@ -130,11 +130,18 @@ export default class DateSelector {
       null,
     );
 
-    const [bookedState] = createResource(
+    // avoids sending two requests when both year and month changes closely in time
+    // (prevMonth when month is January changes year by 1 and month to 11)
+    const bookedQuery = createDeferred(
       () => ({ year: year(), month: month() + 1 }),
+      { timeoutMs: 50 },
+    );
+    const [bookedState] = createResource(
+      bookedQuery,
       fetchBookedDays,
     );
     this.bookedState = bookedState;
+
     this.days = () => {
       const days = this.getDaysInMonth();
 
