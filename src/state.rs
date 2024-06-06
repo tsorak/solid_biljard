@@ -1,16 +1,20 @@
 use tokio::sync::broadcast::{channel, Receiver, Sender};
 
+use crate::db::DB;
+
 #[derive(Debug, Clone)]
 pub struct State {
     pub motd: String,
     pub client_channel: ClientChannel,
+    pub db: DB,
 }
 
 impl State {
-    pub fn new(motd: &str) -> Self {
+    pub async fn new(motd: &str) -> Self {
         Self {
             motd: motd.to_string(),
             client_channel: ClientChannel::new(),
+            db: DB::connect().await,
         }
     }
 }

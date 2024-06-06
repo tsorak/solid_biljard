@@ -3,6 +3,7 @@ use tokio::net::TcpListener;
 use crate::state::State;
 
 mod api;
+mod db;
 mod router;
 mod state;
 
@@ -11,7 +12,7 @@ use client::Client;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let state = State::new("foo");
+    let state = State::new("foo").await;
 
     let tcp_listener = TcpListener::bind("localhost:3000")
         .await
