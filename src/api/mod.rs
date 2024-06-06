@@ -1,5 +1,6 @@
 use axum::{routing::get, Router};
 
+mod book;
 mod motd;
 mod ws;
 
@@ -8,6 +9,7 @@ pub fn api_router() -> Router<crate::State> {
         .route("/", get(status::status))
         .route("/motd", get(motd::motd))
         .route("/ws", get(ws::ws))
+        .nest("/book", book::book_router())
 }
 
 pub(super) mod status {
