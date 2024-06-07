@@ -6,10 +6,13 @@ pub mod res {
         Json,
     };
 
-    use serde_json::Value;
+    use serde::Serialize;
 
-    pub fn json(code: u16, value: Value) -> Response {
-        let mut res = Json::from(value.to_string()).into_response();
+    pub fn json<T>(code: u16, value: T) -> Response
+    where
+        T: Serialize,
+    {
+        let mut res = Json(value).into_response();
         *res.status_mut() = StatusCode::from_u16(code).unwrap();
         res
     }

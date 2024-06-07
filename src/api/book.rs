@@ -5,7 +5,6 @@ use axum::{
     Router,
 };
 use serde::Deserialize;
-use serde_json::json;
 
 use crate::ext::res;
 
@@ -24,7 +23,7 @@ async fn booked_days(state: State<crate::State>, path: Path<BookedDaysParams>) -
     let month = path.month;
 
     match state.db.booked_days.get_during(year, month).await {
-        Ok(data) => res::json(200, json!(data)),
+        Ok(data) => res::json(200, data),
         Err(err) => {
             dbg!(err);
             res::str(500, "Server error")
