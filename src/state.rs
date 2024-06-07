@@ -11,10 +11,19 @@ pub struct State {
 
 impl State {
     pub async fn new(motd: &str) -> Self {
-        Self {
-            motd: motd.to_string(),
-            client_channel: ClientChannel::new(),
-            db: DB::connect().await,
+        // use sqlite unless told not to
+        if cfg!(feature = "postgres") || !cfg!(feature = "sqlite") {
+            Self {
+                motd: motd.to_string(),
+                client_channel: ClientChannel::new(),
+                db: DB::new_postgres().await,
+            }
+        } else {
+            Self {
+                motd: motd.to_string(),
+                client_channel: ClientChannel::new(),
+                db: DB::new_sqlite().await,
+            }
         }
     }
 }

@@ -1,39 +1,39 @@
-mod booked_days;
-mod users;
+mod postgres;
+mod sqlite;
 
-use sqlx::postgres::PgPool;
+mod accessors;
+mod types;
 
-const CONNECT_URL: &str = "postgres://postgres:root@localhost/biljard";
+#[derive(Debug, Clone)]
+pub enum DatabaseProvider {
+    Postgres(postgres::DB),
+    Sqlite(sqlite::DB),
+}
 
 #[derive(Debug, Clone)]
 pub struct DB {
-    // pool: PgPool,
-    pub booked_days: booked_days::BookedDays,
-    // users: users::Users,
+    // provider: DatabaseProvider,
+    pub booked_days: accessors::booked_days::BookedDays,
 }
 
 impl DB {
-    pub fn new(pool: PgPool) -> Self {
+    fn new(provider: DatabaseProvider) -> Self {
         Self {
-            // pool: pool.clone(),
-            booked_days: booked_days::BookedDays::new(pool.clone()),
-            // users: users::Users::new(pool.clone()),
+            booked_days: accessors::booked_days::BookedDays::new(provider),
         }
     }
 
-    pub async fn connect() -> Self {
-        let pool = PgPool::connect(CONNECT_URL)
-            .await
-            .expect("Failed to connect to database");
+    pub async fn new_postgres() -> Self {
+        let pool = postgres::DB::connect().await;
+        let provider = DatabaseProvider::Postgres(pool);
 
-        Self::new(pool)
+        Self::new(provider)
     }
 
-    // pub async fn connect_to(url: &str) -> Self {
-    //     let pool = PgPool::connect(url)
-    //         .await
-    //         .expect("Failed to connect to database");
-    //
-    //     Self::new(pool)
-    // }
+    pub async fn new_sqlite() -> Self {
+        let pool = sqlite::DB::connect().await;
+        let provider = DatabaseProvider::Sqlite(pool);
+
+        Self::new(provider)
+    }
 }
