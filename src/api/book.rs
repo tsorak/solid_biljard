@@ -1,11 +1,13 @@
 use axum::{
     extract::{Path, State},
-    http::StatusCode as SC,
-    response::IntoResponse,
+    response::Response,
     routing::get,
     Router,
 };
 use serde::Deserialize;
+use serde_json::json;
+
+use crate::ext::res;
 
 pub fn book_router() -> Router<crate::State> {
     Router::new().route("/:year/:month", get(booked_days))
@@ -17,19 +19,15 @@ struct BookedDaysParams {
     month: u8,
 }
 
-async fn booked_days(
-    state: State<crate::State>,
-    path: Path<BookedDaysParams>,
-) -> impl IntoResponse {
+async fn booked_days(state: State<crate::State>, path: Path<BookedDaysParams>) -> Response {
     let year = path.year;
     let month = path.month;
 
     match state.db.booked_days.get_during(year, month).await {
-        Ok(data) => (SC::OK, serde_json::to_string(&data).unwrap()),
+        Ok(data) => res::json(200, json!(data)),
         Err(err) => {
             dbg!(err);
-
-            (SC::INTERNAL_SERVER_ERROR, "Server error".to_string())
+            res::str(500, "Server error")
         }
     }
 }

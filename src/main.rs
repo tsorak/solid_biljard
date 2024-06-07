@@ -4,6 +4,7 @@ use crate::state::State;
 
 mod api;
 mod db;
+mod ext;
 mod router;
 mod state;
 
