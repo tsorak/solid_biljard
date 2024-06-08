@@ -1,60 +1,120 @@
-use axum::response::Response;
+use axum::{extract::State, response::Response, Json};
+use serde::Deserialize;
 
-pub async fn new_code() -> Response {}
+use crate::ext::res;
 
-pub async fn validate_code() -> Response {}
+type Email = String;
+
+#[derive(Debug, Deserialize)]
+pub struct NewCodeReq {
+    email: Email,
+}
+
+pub async fn new_code(state: State<crate::State>, body: Json<NewCodeReq>) -> Response {
+    let email = body.email.clone();
+
+    match state.email_code_session.new_code(email).await {
+        Ok(_) => res::Json::new("Session created").status(201),
+        // failed to send request over channel
+        Err(_) => res::text(500, "Server error"),
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct ValidateCodeReq {
+    email: Email,
+    code: u16,
+}
+
+pub enum ValidateCodeError {
+    // No session matches the email in the request
+    SessionMissing,
+    // Server fault
+    ServerError,
+}
+
+pub async fn validate_code(state: State<crate::State>, body: Json<ValidateCodeReq>) -> Response {
+    let ValidateCodeReq { email, code } = body.0;
+
+    match state.email_code_session.validate_code(email, code).await {
+        Ok(is_correct) => {
+            if is_correct {
+                let mut res = res::Json::new("Correct code")
+                    .with_uid("correct_code")
+                    .status(200);
+
+                let _headers = res.headers_mut();
+                // TODO: do some jwt stuff
+
+                res
+            } else {
+                res::Json::new("Incorrect code")
+                    .with_uid("incorrect_code")
+                    .status(400)
+            }
+        }
+        Err(ValidateCodeError::SessionMissing) => {
+            res::Json::new("No session active for the specified email")
+                .with_uid("session_missing")
+                .status(400)
+        }
+        Err(ValidateCodeError::ServerError) => res::Json::new("Server error").status(500),
+    }
+}
 
 pub mod session {
-    use anyhow::Error;
     use tokio::{
         sync::{
             mpsc::{channel, Receiver, Sender},
             oneshot,
         },
-        task::AbortHandle,
+        // task::AbortHandle,
     };
 
-    type Email = String;
+    use super::{Email, ValidateCodeError};
 
     enum Request {
         NewCode(Email),
-        ValidateCode((Email, u16, oneshot::Sender<anyhow::Result<bool>>)),
+        ValidateCode(
+            (
+                Email,
+                u16,
+                oneshot::Sender<anyhow::Result<bool, ValidateCodeError>>,
+            ),
+        ),
     }
 
+    #[derive(Debug, Clone)]
     pub struct CodeSession {
         tx: Sender<Request>,
-        handle: AbortHandle,
     }
 
     impl CodeSession {
         pub fn new() -> Self {
             let (tx, rx) = channel::<Request>(16);
 
-            let handle = tokio::spawn(async move { session_event_loop(rx).await }).abort_handle();
+            let _handle = tokio::spawn(async move { session_event_loop(rx).await }).abort_handle();
 
-            Self { tx, handle }
+            Self { tx }
         }
 
         pub async fn new_code(&self, email: Email) -> anyhow::Result<()> {
             Ok(self.tx.send(Request::NewCode(email)).await?)
         }
 
-        pub async fn validate_code(&self, email: Email, code: u16) -> anyhow::Result<bool> {
-            let (resolver, rx) = oneshot::channel::<anyhow::Result<bool>>();
+        pub async fn validate_code(
+            &self,
+            email: Email,
+            code: u16,
+        ) -> anyhow::Result<bool, ValidateCodeError> {
+            let (resolver, rx) = oneshot::channel::<anyhow::Result<bool, ValidateCodeError>>();
 
-            let _sent = self
-                .tx
+            self.tx
                 .send(Request::ValidateCode((email, code, resolver)))
-                .await?;
+                .await
+                .map_err(|_| ValidateCodeError::ServerError)?;
 
-            let result = rx.await?;
-            result
-        }
-    }
-
-    impl Drop for CodeSession {
-        fn drop(&mut self) {
-            self.handle.abort();
+            rx.await.map_err(|_| ValidateCodeError::ServerError)?
         }
     }
 
@@ -65,6 +125,7 @@ pub mod session {
             if let Some(m) = rx.recv().await {
                 match m {
                     Request::NewCode(email) => {
+                        // TODO: generate random 4-digit code
                         let code = 0000;
 
                         state.insert(email, code);
@@ -73,8 +134,8 @@ pub mod session {
                         let correct_code = match state.get(&email) {
                             Some(v) => v,
                             None => {
-                                let _ = response_channel
-                                    .send(Err(Error::msg("No active session for that email")));
+                                let _ =
+                                    response_channel.send(Err(ValidateCodeError::SessionMissing));
                                 continue;
                             }
                         };
@@ -108,7 +169,7 @@ pub mod session {
             }
 
             pub fn get(&mut self, email: &Email) -> Option<u16> {
-                self.0.get(email).map(|code| *code)
+                self.0.get(email).copied()
             }
 
             pub fn remove(&mut self, email: Email) {

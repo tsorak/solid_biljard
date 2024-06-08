@@ -1,29 +1,31 @@
 use tokio::sync::broadcast::{channel, Receiver, Sender};
 
-use crate::db::DB;
+use crate::{api::email_code, db::DB};
 
 #[derive(Debug, Clone)]
 pub struct State {
     pub motd: String,
     pub client_channel: ClientChannel,
     pub db: DB,
+    pub email_code_session: email_code::session::CodeSession,
 }
 
 impl State {
     pub async fn new(motd: &str) -> Self {
         // use sqlite unless told not to
         if cfg!(feature = "postgres") || !cfg!(feature = "sqlite") {
-            Self {
-                motd: motd.to_string(),
-                client_channel: ClientChannel::new(),
-                db: DB::new_postgres().await,
-            }
+            Self::new_with_db(DB::new_postgres().await, motd)
         } else {
-            Self {
-                motd: motd.to_string(),
-                client_channel: ClientChannel::new(),
-                db: DB::new_sqlite().await,
-            }
+            Self::new_with_db(DB::new_sqlite().await, motd)
+        }
+    }
+
+    fn new_with_db(db: DB, motd: &str) -> Self {
+        Self {
+            motd: motd.to_string(),
+            client_channel: ClientChannel::new(),
+            db,
+            email_code_session: email_code::session::CodeSession::new(),
         }
     }
 }

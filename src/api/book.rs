@@ -26,7 +26,7 @@ async fn booked_days(state: State<crate::State>, path: Path<BookedDaysParams>) -
         Ok(data) => res::json(200, data),
         Err(err) => {
             dbg!(err);
-            res::str(500, "Server error")
+            res::text(500, "Server error")
         }
     }
 }
