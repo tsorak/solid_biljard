@@ -56,6 +56,7 @@ async fn handle_text_message(
     state: &mut State<crate::State>,
     data: String,
 ) {
+    #[cfg(debug_assertions)]
     if let "rebuild" = data.as_str() {
         state.client_channel.send_rebuild();
     }
