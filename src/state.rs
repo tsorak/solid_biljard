@@ -4,25 +4,23 @@ use crate::{api::email_code, db::DB};
 
 #[derive(Debug, Clone)]
 pub struct State {
-    pub motd: String,
     pub client_channel: ClientChannel,
     pub db: DB,
     pub email_code_session: email_code::session::CodeSession,
 }
 
 impl State {
-    pub async fn new(motd: &str) -> Self {
+    pub async fn new() -> Self {
         // use sqlite unless told not to
         if cfg!(feature = "postgres") || !cfg!(feature = "sqlite") {
-            Self::new_with_db(DB::new_postgres().await, motd)
+            Self::new_with_db(DB::new_postgres().await)
         } else {
-            Self::new_with_db(DB::new_sqlite().await, motd)
+            Self::new_with_db(DB::new_sqlite().await)
         }
     }
 
-    fn new_with_db(db: DB, motd: &str) -> Self {
+    fn new_with_db(db: DB) -> Self {
         Self {
-            motd: motd.to_string(),
             client_channel: ClientChannel::new(),
             db,
             email_code_session: email_code::session::CodeSession::new(),

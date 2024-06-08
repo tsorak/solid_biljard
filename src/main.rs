@@ -13,7 +13,7 @@ use client::Client;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let state = State::new("foo").await;
+    let state = State::new().await;
 
     let tcp_listener = TcpListener::bind("localhost:3000")
         .await

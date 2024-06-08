@@ -6,7 +6,6 @@ import { For } from "solid-js";
 
 const navLinks = [
   ["Home", "/"],
-  ["Message Of The Day", "/motd"],
   ["Book", "/book"],
 ];
 
