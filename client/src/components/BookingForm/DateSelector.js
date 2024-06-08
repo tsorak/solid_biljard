@@ -173,11 +173,29 @@ export default class DateSelector {
   }
 
   updateSelectedDate() {
-    const day = this.day();
-    const month = this.month() + 1;
-    const year = this.year();
+    const { day, month, year } = this.formatDateComponents();
 
     this.setSelectedDate(`${day}-${month}-${year}`);
+  }
+
+  formatDateComponents() {
+    let day = this.day();
+    let month = this.month() + 1;
+    const year = this.year();
+
+    if (day < 10) {
+      day = `0${day}`;
+    }
+
+    if (month < 10) {
+      month = `0${month}`;
+    }
+
+    return {
+      day: `${day}`,
+      month: `${month}`,
+      year: `${year}`,
+    };
   }
 
   nextYear() {
