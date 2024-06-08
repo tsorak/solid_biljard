@@ -1,5 +1,6 @@
 use axum::{routing::get, Router};
 
+mod auth;
 mod book;
 mod motd;
 mod ws;
