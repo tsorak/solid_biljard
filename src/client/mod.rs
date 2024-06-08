@@ -9,19 +9,16 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(watch_dir: &str, state: State) -> Self {
-        let builder = build::Builder::new(state.clone());
+    pub async fn init(watch_dir: &str, state: State) -> Self {
+        let mut builder = build::Builder::new(state.clone()).await;
+        builder.init();
+
         let watcher = watch::ClientWatcher::new(watch_dir, state.clone());
 
         Self {
             watcher: Some(watcher),
             builder,
         }
-    }
-
-    pub async fn init(&mut self) -> &Self {
-        self.builder.init().await;
-        self
     }
 
     pub fn take_watcher(&mut self) -> Option<watch::ClientWatcher> {

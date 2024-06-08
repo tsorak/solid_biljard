@@ -23,23 +23,20 @@ impl Client {
 }
 
 impl Builder {
-    pub fn new(state: State) -> Self {
+    pub async fn new(state: State) -> Self {
+        let package_manager = get_package_manager()
+            .await
+            .expect("No JS package manager found");
+
         Self {
-            package_manager: "".into(),
+            package_manager,
             client_channel: Some(state.client_channel.clone()),
             build_loop_handle: None,
         }
     }
 
-    pub async fn init(&mut self) -> &mut Self {
-        let pm = get_package_manager()
-            .await
-            .expect("No JS package manager found");
-
-        self.package_manager = pm;
-
-        self.build_loop_handle = Some(self.start_build_event_loop().await);
-
+    pub fn init(&mut self) -> &mut Self {
+        self.build_loop_handle = Some(self.start_build_event_loop());
         self
     }
 
@@ -67,7 +64,7 @@ impl Builder {
         Ok(())
     }
 
-    async fn start_build_event_loop(&mut self) -> JoinHandle<()> {
+    fn start_build_event_loop(&mut self) -> JoinHandle<()> {
         // at the moment only this method uses the client_channel. Expect it to only be used once.
         let mut ch = self
             .client_channel
