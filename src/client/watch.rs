@@ -8,7 +8,7 @@ use crate::state::{ClientChannel, State};
 
 pub struct ClientWatcher(JoinHandle<()>);
 
-const IGNORED_PATHS: [&str; 1] = ["dist"];
+const IGNORED_PATHS: [&str; 2] = ["dist", "node_modules"];
 
 impl ClientWatcher {
     pub fn new(watch_dir: &str, state: State) -> Self {
