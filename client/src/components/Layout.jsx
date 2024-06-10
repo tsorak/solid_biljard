@@ -7,14 +7,19 @@ import { For } from "solid-js";
 const navLinks = [
   ["Home", "/"],
   ["Book", "/book"],
+  ["Login", "/auth/email_code"],
 ];
 
 export default function Layout(props) {
   return (
     <div class={styles.main_layout}>
-      <Header />
+      <div>
+        <Header />
+      </div>
       {props.children}
-      <Footer />
+      <div>
+        <Footer />
+      </div>
     </div>
   );
 }
@@ -40,6 +45,7 @@ function Footer() {
       </div>
       <div>
         <p>Don't call me :)</p>
+        <p>hi</p>
       </div>
     </footer>
   );

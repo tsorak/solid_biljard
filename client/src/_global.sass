@@ -1,3 +1,5 @@
+@import "./_variables.sass"
+
 @mixin _center()
   display: flex
   flex-direction: column
@@ -15,14 +17,17 @@
   color: #fff
   cursor: pointer
 
+@mixin _link_colors()
+  color: $secondary
+
+@mixin _input_field()
+  
+
 ._logo
   animation: logo-spin infinite 20s linear
   height: 40vmin
   pointer-events: none
   padding: 1em
-
-._link
-  color: #55aaff
 
 @keyframes logo-spin 
   from 

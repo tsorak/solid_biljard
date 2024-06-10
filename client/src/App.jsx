@@ -1,9 +1,10 @@
-import { HashRouter, Route } from "@solidjs/router";
+import { Route, Router } from "@solidjs/router";
 
 import Layout from "./components/Layout.jsx";
 
 import Home from "./routes/Home.jsx";
 import Book from "./routes/Book.jsx";
+import * as auth from "./routes/auth.js";
 
 import ClientSocket from "./websocket/socket.js";
 import * as appState from "./appState.js";
@@ -18,10 +19,11 @@ export default function App() {
 
   return (
     <AppState.Provider value={state}>
-      <HashRouter root={Layout}>
+      <Router root={Layout}>
         <Route path="/" component={Home} />
         <Route path="/book" component={Book} />
-      </HashRouter>
+        <Route path="/auth/email_code" component={auth.EmailCode} />
+      </Router>
     </AppState.Provider>
   );
 }

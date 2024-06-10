@@ -1,0 +1,63 @@
+@import "../../_variables.sass"
+
+$field_bg: mix(#fff, $bg, 5%)
+$field_bg_hover: mix(#fff, $bg, 2.5%)
+$field_bg_selected: mix(#000, $bg, 5%)
+
+@mixin sizing
+  padding: .5em
+  border-radius: .5em
+  outline: none
+
+@mixin transitions
+  transition: all .2s
+
+.button
+  @include sizing
+  @include transitions
+
+  border: none
+  padding: calc(.5em + 2px)
+
+  background: $secondary
+  color: #fff
+
+  cursor: pointer
+
+  &:hover
+    background: mix(#000, $secondary, 10%)
+
+  &:active
+    background: mix(#000, $secondary, 20%)
+
+.text_input
+  @include sizing
+  @include transitions
+
+  background: $field_bg
+  color: #fff
+  border: 2px solid $field_bg
+
+  &:hover
+    background: $field_bg_hover
+    border-color: $field_bg_hover
+
+  &:focus
+    background: $field_bg_selected
+    border: 2px solid $field_bg_selected
+    border-bottom: 2px solid $secondary
+
+
+.form 
+  display: flex
+  flex-direction: column
+
+  gap: 1em
+
+  & *
+    font-size: 1em
+
+.form_error_text
+  color: #f33c
+  font-size: .8em !important
+  margin-left: .5em

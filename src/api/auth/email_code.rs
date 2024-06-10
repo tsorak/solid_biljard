@@ -14,9 +14,11 @@ pub async fn new_code(state: State<crate::State>, body: Json<NewCodeReq>) -> Res
     let email = body.email.clone();
 
     match state.email_code_session.new_code(email).await {
-        Ok(_) => res::Json::new("Session created").status(201),
+        Ok(_) => res::Json::new("Session created")
+            .with_uid("session_created")
+            .status(201),
         // failed to send request over channel
-        Err(_) => res::text(500, "Server error"),
+        Err(_) => res::Json::new("Server error").status(500),
     }
 }
 

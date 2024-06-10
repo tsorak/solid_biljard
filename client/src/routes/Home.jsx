@@ -9,7 +9,7 @@ export default function Home() {
         Edit <code>src/App.jsx</code> and save to reload.
       </p>
       <a
-        class={styles._link}
+        class={styles.link}
         href="https://github.com/solidjs/solid"
         target="_blank"
         rel="noopener noreferrer"
