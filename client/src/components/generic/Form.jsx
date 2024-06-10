@@ -2,7 +2,7 @@ import { createSignal, For } from "solid-js";
 
 import styles from "./Generic.module.sass";
 
-import { Button, TextInput } from "../generic.js";
+import { Button, DigitInput, TextInput } from "../generic.js";
 
 // const form = {
 //   fields: {
@@ -67,6 +67,7 @@ import { Button, TextInput } from "../generic.js";
  * @property {string} type
  * @property {string | undefined} placeholder
  * @property {ErrorCase[] | undefined} errors
+ * @property {number} digitCount
  */
 
 /**
@@ -113,19 +114,37 @@ export default function Form({ form }) {
   return (
     <form class={styles.form} onSubmit={(e) => submit(e)}>
       <For each={fields}>
-        {([name, props]) => (
-          <>
-            <TextInput
-              name={name}
-              type={props.type}
-              placeholder={props.placeholder ?? "Skriv här..."}
-              signal={props.signal}
-            />
-            <Show when={!!props.errSignal[0]()}>
-              <p class={styles.form_error_text}>{props.errSignal[0]()}</p>
-            </Show>
-          </>
-        )}
+        {([name, props]) => {
+          switch (props.type) {
+            case "digits":
+              return (
+                <>
+                  <DigitInput
+                    digitCount={props.digitCount}
+                    signal={props.signal}
+                  />
+                  <Show when={!!props.errSignal[0]()}>
+                    <p class={styles.form_error_text}>{props.errSignal[0]()}</p>
+                  </Show>
+                </>
+              );
+
+            default:
+              return (
+                <>
+                  <TextInput
+                    name={name}
+                    type={props.type}
+                    placeholder={props.placeholder ?? "Skriv här..."}
+                    signal={props.signal}
+                  />
+                  <Show when={!!props.errSignal[0]()}>
+                    <p class={styles.form_error_text}>{props.errSignal[0]()}</p>
+                  </Show>
+                </>
+              );
+          }
+        }}
       </For>
       <Button type="submit">{submitElement.text}</Button>
     </form>

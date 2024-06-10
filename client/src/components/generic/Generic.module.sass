@@ -12,6 +12,20 @@ $field_bg_selected: mix(#000, $bg, 5%)
 @mixin transitions
   transition: all .2s
 
+@mixin input_box_colors
+  background: $field_bg
+  color: #fff
+  border: 2px solid $field_bg
+
+  &:hover
+    background: $field_bg_hover
+    border-color: $field_bg_hover
+
+  &:focus
+    background: $field_bg_selected
+    border: 2px solid $field_bg_selected
+    border-bottom: 2px solid $secondary
+
 .button
   @include sizing
   @include transitions
@@ -33,20 +47,7 @@ $field_bg_selected: mix(#000, $bg, 5%)
 .text_input
   @include sizing
   @include transitions
-
-  background: $field_bg
-  color: #fff
-  border: 2px solid $field_bg
-
-  &:hover
-    background: $field_bg_hover
-    border-color: $field_bg_hover
-
-  &:focus
-    background: $field_bg_selected
-    border: 2px solid $field_bg_selected
-    border-bottom: 2px solid $secondary
-
+  @include input_box_colors
 
 .form 
   display: flex
@@ -61,3 +62,22 @@ $field_bg_selected: mix(#000, $bg, 5%)
   color: #f33c
   font-size: .8em !important
   margin-left: .5em
+
+.digit_container
+  display: flex
+  justify-content: space-evenly
+
+  & *
+    font-size: 2em
+
+.digit_input
+  @include sizing
+  @include transitions
+  @include input_box_colors
+
+  min-width: 1ch
+  width: 1ch
+
+  -webkit-appearance: none
+  -moz-appearance: textfield
+  

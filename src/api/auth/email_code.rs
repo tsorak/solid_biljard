@@ -4,6 +4,7 @@ use serde::Deserialize;
 use crate::ext::res;
 
 type Email = String;
+type Code = String;
 
 #[derive(Debug, Deserialize)]
 pub struct NewCodeReq {
@@ -25,7 +26,7 @@ pub async fn new_code(state: State<crate::State>, body: Json<NewCodeReq>) -> Res
 #[derive(Debug, Deserialize)]
 pub struct ValidateCodeReq {
     email: Email,
-    code: u16,
+    code: Code,
 }
 
 pub enum ValidateCodeError {
@@ -73,14 +74,14 @@ pub mod session {
         // task::AbortHandle,
     };
 
-    use super::{Email, ValidateCodeError};
+    use super::{Code, Email, ValidateCodeError};
 
     enum Request {
         NewCode(Email),
         ValidateCode(
             (
                 Email,
-                u16,
+                Code,
                 oneshot::Sender<anyhow::Result<bool, ValidateCodeError>>,
             ),
         ),
@@ -107,7 +108,7 @@ pub mod session {
         pub async fn validate_code(
             &self,
             email: Email,
-            code: u16,
+            code: Code,
         ) -> anyhow::Result<bool, ValidateCodeError> {
             let (resolver, rx) = oneshot::channel::<anyhow::Result<bool, ValidateCodeError>>();
 
@@ -128,7 +129,7 @@ pub mod session {
                 match m {
                     Request::NewCode(email) => {
                         // TODO: generate random 4-digit code
-                        let code = 0000;
+                        let code = "0000".to_string();
 
                         state.insert(email, code);
                     }
@@ -157,21 +158,21 @@ pub mod session {
     mod code_store {
         use std::collections::HashMap;
 
-        use super::Email;
+        use super::{Code, Email};
 
-        pub struct CodeStore(HashMap<Email, u16>);
+        pub struct CodeStore(HashMap<Email, Code>);
 
         impl CodeStore {
             pub fn new() -> Self {
                 Self(HashMap::new())
             }
 
-            pub fn insert(&mut self, email: Email, code: u16) {
+            pub fn insert(&mut self, email: Email, code: Code) {
                 self.0.insert(email, code);
             }
 
-            pub fn get(&mut self, email: &Email) -> Option<u16> {
-                self.0.get(email).copied()
+            pub fn get(&mut self, email: &Email) -> Option<Code> {
+                self.0.get(email).map(|v| v.to_owned())
             }
 
             pub fn remove(&mut self, email: Email) {

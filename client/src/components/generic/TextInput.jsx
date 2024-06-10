@@ -13,6 +13,7 @@ export default function TextInput(props) {
       placeholder={placeholder ?? ""}
       value={get?.()}
       onInput={(e) => set?.(e.target.value)}
+      autocomplete="off"
     />
   );
 }
