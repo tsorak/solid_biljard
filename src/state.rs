@@ -1,6 +1,6 @@
 use tokio::sync::broadcast::{channel, Receiver, Sender};
 
-use crate::{api::email_code, db::DB};
+use crate::{api::types::email_code, db::DB};
 
 #[derive(Debug, Clone)]
 pub struct State {

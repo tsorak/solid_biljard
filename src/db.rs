@@ -14,12 +14,14 @@ pub enum DatabaseProvider {
 pub struct DB {
     // provider: DatabaseProvider,
     pub booked_days: accessors::booked_days::BookedDays,
+    pub users: accessors::users::Users,
 }
 
 impl DB {
     fn new(provider: DatabaseProvider) -> Self {
         Self {
-            booked_days: accessors::booked_days::BookedDays::new(provider),
+            booked_days: accessors::booked_days::BookedDays::new(provider.clone()),
+            users: accessors::users::Users::new(provider),
         }
     }
 

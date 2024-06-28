@@ -4,7 +4,7 @@ mod auth;
 mod book;
 mod ws;
 
-pub use auth::email_code;
+pub mod types;
 
 pub fn api_router() -> Router<crate::State> {
     Router::new()
