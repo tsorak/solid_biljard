@@ -8,6 +8,8 @@ mod ext;
 mod router;
 mod state;
 
+mod password_hash;
+
 mod client;
 use client::Client;
 

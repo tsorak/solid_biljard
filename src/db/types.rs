@@ -9,13 +9,14 @@ pub struct BookedDay {
 
 #[derive(Debug, Deserialize, Serialize, FromRow)]
 pub struct User {
-    uuid: String,
+    user_id: String,
+    public_id: String,
     email: String,
     username: String,
     password: String,
 }
 
-mod user {
+pub mod user {
     use argon2::{Argon2, PasswordHash, PasswordVerifier};
 
     use super::User;
@@ -28,6 +29,14 @@ mod user {
             Argon2::default()
                 .verify_password(password.as_bytes(), &actual_password)
                 .is_ok()
+        }
+    }
+
+    pub mod register {
+        pub enum RegisterError {
+            EmailTaken,
+            UsernameTaken,
+            Other,
         }
     }
 }

@@ -1,29 +1,33 @@
 use tokio::sync::broadcast::{channel, Receiver, Sender};
 
-use crate::{api::types::email_code, db::DB};
+use crate::{api::types::email_code, db::DB, password_hash::PasswordHasher};
 
 #[derive(Debug, Clone)]
 pub struct State {
     pub client_channel: ClientChannel,
     pub db: DB,
     pub email_code_session: email_code::session::CodeSession,
+    pub password_hasher: PasswordHasher,
 }
 
 impl State {
     pub async fn new() -> Self {
         // use sqlite unless told not to
         if cfg!(feature = "postgres") || !cfg!(feature = "sqlite") {
-            Self::new_with_db(DB::new_postgres().await)
+            let postgres_db = DB::new_postgres().await;
+            Self::new_with_db(postgres_db).await
         } else {
-            Self::new_with_db(DB::new_sqlite().await)
+            let sqlite_db = DB::new_sqlite().await;
+            Self::new_with_db(sqlite_db).await
         }
     }
 
-    fn new_with_db(db: DB) -> Self {
+    async fn new_with_db(db: DB) -> Self {
         Self {
             client_channel: ClientChannel::new(),
             db,
             email_code_session: email_code::session::CodeSession::new(),
+            password_hasher: PasswordHasher::init("key.pem").await,
         }
     }
 }

@@ -2,7 +2,7 @@ mod postgres;
 mod sqlite;
 
 mod accessors;
-mod types;
+pub mod types;
 
 #[derive(Debug, Clone)]
 pub enum DatabaseProvider {

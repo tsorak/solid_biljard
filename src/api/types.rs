@@ -6,3 +6,7 @@ pub mod login {
         Username(String),
     }
 }
+
+pub mod register {
+    pub use crate::api::auth::password::RegisterReq;
+}

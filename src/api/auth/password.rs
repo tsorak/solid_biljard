@@ -1,6 +1,7 @@
 use axum::{extract::State, response::Response, Json};
 use serde::Deserialize;
 
+use crate::db::types::user::register::RegisterError;
 use crate::ext::res;
 
 #[derive(Debug, Deserialize)]
@@ -56,6 +57,36 @@ mod login {
     }
 }
 
-pub async fn register() -> Response {
-    todo!()
+#[derive(Debug, Deserialize)]
+pub struct RegisterReq {
+    pub username: String,
+    pub email: String,
+    pub password: String,
+}
+
+pub async fn register(state: State<crate::State>, body: Json<RegisterReq>) -> Response {
+    let Json(RegisterReq {
+        username,
+        email,
+        password,
+    }) = body;
+
+    let hashed_password = state.password_hasher.hash(password);
+
+    let new_user = RegisterReq {
+        username,
+        email,
+        password: hashed_password,
+    };
+
+    match state.db.users.register(new_user).await {
+        Err(RegisterError::EmailTaken) => res::Json::new("Provided email is already in use")
+            .with_uid("email_taken")
+            .status(400),
+        Err(RegisterError::UsernameTaken) => res::Json::new("Provided username is already in use")
+            .with_uid("username_taken")
+            .status(400),
+        Err(RegisterError::Other) => res::Json::new("Server error").status(500),
+        Ok(_) => res::Json::new("Success").status(201),
+    }
 }
